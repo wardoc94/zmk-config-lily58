@@ -1,0 +1,12 @@
+config USB_DISPLAY_WAKE
+    bool "Keep the display on while USB powered"
+    depends on ZMK_DISPLAY
+    default n
+    help
+      When enabled, the display will not blank due to the normal
+      inactivity idle timeout as long as the keyboard has USB power
+      present (whether plugged into a computer, a charger, or a
+      power bank). This only bypasses the idle-blanking check for
+      the display; keystrokes and everything else are unaffected
+      and continue to route over whichever transport (USB or
+      Bluetooth) is selected as normal.
