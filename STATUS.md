@@ -34,10 +34,13 @@ Switched from the built-in status screen to
 [zmk-nice-oled](https://github.com/mctechnology17/zmk-nice-oled).
 Configured as:
 - **Left (central)**: battery + BT profile/connection indicator (both
-  shown by default, no toggle needed), WPM shown as a graph only
-  (number/speedometer/luna/bongo-cat all off), layer indicator.
-  HID lock and modifier indicators turned off since they weren't
-  requested.
+  shown by default, no toggle needed), WPM shown as a graph plus a
+  numeric readout positioned above it (speedometer/luna/bongo-cat
+  off), layer indicator. HID lock and modifier indicators turned off
+  since they weren't requested.
+  - Note: the module's documented OLED default for the layer widget
+    (`Y=146`) exceeds the 128px canvas height and renders off-screen —
+    that's why it looked broken. Repositioned to `Y=115`.
 - **Right (peripheral)**: battery + connection indicator via the
   animated "Smart Battery" widget, plus the animated gem (cat, the
   module's default animation, explicitly turned off in favor of gem).
