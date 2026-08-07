@@ -5,15 +5,17 @@ zmk-config-lily58 repo (merge with what's already there).
 
 ## What's included
 - `config/lily58.conf` — RGB underglow (red, 10% brightness, full
-  saturation, SPI3/P0.06 WS2812), `settings_reset` support, and
-  `CONFIG_USB_DISPLAY_WAKE=y` enabling the display-wake module.
+  saturation, SPI3/P0.06 WS2812), `settings_reset` support,
+  `CONFIG_USB_DISPLAY_WAKE=y`, and the `zmk-nice-oled` custom status
+  screen config (see below).
 - `config/lily58.keymap` — original keymap plus the SPI3/WS2812
   devicetree block (pinctrl, &spi3, led_strip, chosen zmk,underglow)
   merged in directly, since the built-in ZMK lily58 shield shadows any
   same-named file placed elsewhere.
-- `config/west.yml` — unchanged from your original.
-- `build.yaml` — three build targets: `lily58_left`, `lily58_right`,
-  `settings_reset`. No manual cmake-args needed anymore (see below).
+- `config/west.yml` — now also pulls in mctechnology17/zmk-nice-oled
+  as a module (`main` branch), alongside your existing zmk import.
+- `build.yaml` — four build targets: `lily58_left nice_oled`,
+  `lily58_right nice_oled`, `settings_reset`.
 - `zephyr/module.yml` (repo root) — declares the whole repo as a valid
   Zephyr module, pointing at `modules/usb_display_wake` for its CMake
   and Kconfig. Your CI workflow already auto-injects
@@ -26,6 +28,26 @@ zmk-config-lily58 repo (merge with what's already there).
   power is present (charger, power bank, or data), regardless of the
   normal idle timeout.
 - `boards/shields/.gitkeep` — placeholder, unchanged.
+
+## Custom status screen (zmk-nice-oled)
+Switched from the built-in status screen to
+[zmk-nice-oled](https://github.com/mctechnology17/zmk-nice-oled).
+Configured as:
+- **Left (central)**: battery + BT profile/connection indicator (both
+  shown by default, no toggle needed), WPM shown as a graph only
+  (number/speedometer/luna/bongo-cat all off), layer indicator.
+  HID lock and modifier indicators turned off since they weren't
+  requested.
+- **Right (peripheral)**: battery + connection indicator via the
+  animated "Smart Battery" widget, plus the animated gem (cat, the
+  module's default animation, explicitly turned off in favor of gem).
+
+The module's default widget coordinates are tuned for the exact
+128×32 SSD1306 OLED this board uses (rendered rotated into a tall
+strip), so no manual position tuning should be needed — but since this
+can't be previewed without real hardware, some layout tweaks may still
+be wanted once you see it running. All position options are
+`CONFIG_NICE_OLED_WIDGET_*_CUSTOM_X` / `_Y` in `lily58.conf` if so.
 
 ## One manual cleanup step
 If `boards/shields/lily58/boards/nice_nano_v2.overlay` still exists in
