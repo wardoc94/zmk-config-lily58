@@ -42,12 +42,19 @@ Configured as:
     renders blank if a layer has no `display-name` set. Added
     `display-name = "Base"/"Lower"/"Adjust";` to the three layers in
     `lily58.keymap` to fix it.
-  - Widened the vertical spacing between battery (Y=50), WPM number
-    (Y=68), WPM graph (Y=88), and layer indicator (Y=118) since the
-    first attempt at custom Y positions put the WPM number directly
-    on top of the battery indicator. Still best-effort without seeing
-    it on real hardware — send a photo if anything still overlaps and
-    I'll adjust the exact pixel values.
+  - Widened, then equalized, the vertical spacing: battery (Y=50) ->
+    layer (Y=62) -> WPM number (Y=74) -> WPM graph (Y=86), all 12px
+    apart to match the battery-to-layer gap.
+  - The WPM number was rendering with corrupted/garbled glyphs (seen
+    in a photo — "120" came out as "1Z0", plus a mangled label below
+    it). This matches a documented upstream ZMK issue (zmkfirmware/zmk
+    #3219) where `LV_Z_MEM_POOL_SIZE` being too small causes exactly
+    this kind of glyph corruption once several widgets are active at
+    once. Raised it from the module's default 8192 to 16384.
+  - Nudged the WPM number to `X=-8` to pull it flush with the left
+    edge like the other widgets — its default anchor point seems to
+    differ from battery/layer's, so this is a best-effort estimate,
+    not a confirmed fix.
 - **Right (peripheral)**: battery + connection indicator via the
   animated "Smart Battery" widget, plus the animated gem (cat, the
   module's default animation, explicitly turned off in favor of gem).
