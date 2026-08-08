@@ -55,6 +55,17 @@ Configured as:
     edge like the other widgets — its default anchor point seems to
     differ from battery/layer's, so this is a best-effort estimate,
     not a confirmed fix.
+  - Corrected WPM number centering: its anchor turned out to be the
+    center of the text itself (not left-edge like battery/layer), so
+    `X=16` (half the 32px strip) centers it properly — the earlier
+    `X=10` guess assumed the wrong anchor type.
+  - Moved the BT profile dots to the very top of the screen (`Y=2`)
+    and hid the profile *number* next to the output icon (there's no
+    documented Kconfig toggle to disable it outright, so it's pushed
+    off-canvas at `Y=999` as a workaround). Shifted output icon,
+    battery, layer, WPM number, and WPM graph all down ~14px each to
+    make room. New vertical order: BT dots (2) -> output icon (46) ->
+    battery (64) -> layer (76) -> WPM number (94) -> WPM graph (100).
 - **Right (peripheral)**: battery + connection indicator via the
   animated "Smart Battery" widget, plus the animated gem (cat, the
   module's default animation, explicitly turned off in favor of gem).
