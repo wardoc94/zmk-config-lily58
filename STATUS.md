@@ -6,31 +6,46 @@ zmk-config-lily58 repo (merge with what's already there).
 ## Important: delete the old shared conf file
 `config/lily58.conf` is now **replaced** by `config/lily58_left.conf`
 and `config/lily58_right.conf`. Delete `config/lily58.conf` from your
-repo — if it's still present, ZMK will use it instead of the new
-per-side files (a shared `<shield>.conf` always takes priority over
-`_left`/`_right` variants).
+repo if it's still present — a shared `<shield>.conf` always takes
+priority over `_left`/`_right` variants, so leaving it in place would
+silently ignore these two files.
 
-## Why the split
-Left and right were sharing one `lily58.conf`, so widget-position
-Kconfig options (like `CONFIG_NICE_OLED_WIDGET_BATTERY_CUSTOM_Y`) used
-the same symbol on both halves. Repositioning things for the left
-half's stacked layout accidentally shifted the right half's battery
-text into its gem animation. Splitting into per-side files lets each
-half be tuned independently.
+## What changed this round
+Reverted the "move BT dots to the top" experiment — it made the dots
+disappear entirely and, before the left/right file split existed,
+also pushed the right half's battery text into its gem animation via
+a shared Kconfig symbol. Back to:
+- **BT profile dots**: module default position (bottom of screen).
+- **Profile number**: visible again (no longer hidden off-canvas).
+- **Output icon / battery**: module default positions.
+- **Layer indicator**: `Y=62`.
+- **WPM number**: `X=16, Y=80` (centered attempt, not fully confirmed
+  accurate — see note below).
+- **WPM graph**: `Y=86`.
+- **Right half gem**: reverted to module default position too, since
+  the collision was most likely the left-side shared-symbol bug
+  leaking across before the split existed, not a real default
+  collision. Worth confirming with a photo.
+
+## Why the left/right split still stays
+Even though we're reverting the position experiment, the underlying
+bug it exposed is real: one shared `lily58.conf` meant left-half
+position changes could silently shift right-half widgets via shared
+Kconfig symbols (e.g. `CONFIG_NICE_OLED_WIDGET_BATTERY_CUSTOM_Y`).
+Keeping `lily58_left.conf` / `lily58_right.conf` separate prevents
+that regardless of what positioning changes come next.
 
 ## What's included
 - `config/lily58_left.conf` — RGB underglow, `CONFIG_USB_DISPLAY_WAKE`,
-  and the central-side zmk-nice-oled layout (BT profile dots, output
-  icon, battery, layer, WPM number, WPM graph — see below for exact
-  Y positions).
-- `config/lily58_right.conf` — same shared base settings (RGB, USB
-  wake, etc.), plus the peripheral-side layout (animated gem, Smart
-  Battery), independent of the left half's positions.
-- `config/lily58.keymap` — original keymap, plus the SPI3/WS2812
+  and the central-side zmk-nice-oled layout described above.
+- `config/lily58_right.conf` — same shared base settings, plus the
+  peripheral-side layout (animated gem, Smart Battery), independent
+  of the left half.
+- `config/lily58.keymap` — original keymap plus the SPI3/WS2812
   devicetree block (pinctrl, &spi3, led_strip, chosen zmk,underglow)
-  merged in directly since the built-in ZMK lily58 shield shadows any
-  same-named file placed elsewhere, and `display-name` added to all
-  three layers (needed for the layer widget to render at all).
+  merged in directly, and `display-name` added to all three layers
+  (needed for the layer widget to render at all — this is unrelated
+  to the dots revert and still needed).
 - `config/west.yml` — pulls in mctechnology17/zmk-nice-oled (`main`).
 - `build.yaml` — `lily58_left nice_oled`, `lily58_right nice_oled`,
   `settings_reset`.
@@ -41,37 +56,14 @@ half be tuned independently.
   while USB power is present, regardless of the idle timeout.
 - `boards/shields/.gitkeep` — placeholder, unchanged.
 
-## Custom status screen (zmk-nice-oled) — current layout
+Both halves also have `CONFIG_LV_Z_MEM_POOL_SIZE=16384` (up from the
+module's default 8192) — kept from the earlier fix for corrupted
+glyph rendering on live-updating text (matches upstream ZMK issue
+zmkfirmware/zmk #3219).
 
-**Left (central)**, top to bottom:
-- BT profile dots — `Y=14` (Y=2 rendered nothing, likely clipped by
-  an unusable margin near the true top edge)
-- Output icon (USB/BT type) — `Y=46`
-- Battery — `Y=64`
-- Layer indicator — `Y=76`
-- WPM number — `Y=90`, `X=0` (left-aligned; two centering attempts,
-  X=10 and X=16, both landed visibly off — reverted to left-aligned
-  to match battery/layer rather than guess a third time)
-- WPM graph — `Y=112` (was overlapping the number at a 6px gap;
-  widened substantially)
-
-The profile *number* next to the output icon is hidden at `Y=999`
-(pushed off-canvas) since there's no documented Kconfig toggle to
-disable it outright — a workaround, not a clean "off" switch.
-
-**Right (peripheral)**: animated gem at `Y=60` (module default -18,
-pushed down to clear the battery/output text above it), Smart Battery
-animation, output/battery text left at module defaults.
-
-**Both halves**: `CONFIG_LV_Z_MEM_POOL_SIZE=16384` (up from the
-module's default 8192). Both the left WPM number and the right
-battery percentage were rendering with corrupted glyphs (e.g. "120"
-as "1Z0", "100%" as "1AA5") — matches a documented upstream ZMK issue
-(zmkfirmware/zmk #3219) where too small an LVGL memory pool causes
-exactly this once several widgets are active simultaneously.
-
-None of this has been verified against real hardware beyond the two
-photos so far — please send another one after this build.
+None of this is verified beyond the photos sent so far — please send
+another one after this build to confirm the dots are back and nothing
+else shifted.
 
 ## One manual cleanup step
 If `boards/shields/lily58/boards/nice_nano_v2.overlay` still exists in
